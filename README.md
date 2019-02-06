@@ -1,2 +1,2 @@
 # go-monitor
-Monitorando site com Go
+Monitorando sites com Go
