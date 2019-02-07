@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
 
 func main() {
@@ -34,6 +37,7 @@ func menu() {
 	fmt.Println("3 - Monitorar outro site")
 	fmt.Println("0 - Sair")
 	fmt.Println("...")
+	fmt.Println("")
 }
 
 func userEntry() int {
@@ -50,10 +54,34 @@ func monitoring() {
 	for _, site := range sites {
 		isUp(site)
 	}
+
+	fmt.Println("")
+}
+
+func registerLog(site string, status int) {
+	file, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+
+	statusCode := strconv.Itoa(status)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	file.WriteString(time.Now().Format("02/01/2006 15:04:05") + " - " + site + "- Status: " + statusCode + "\n")
+
+	file.Close()
 }
 
 func logging() {
 	fmt.Println("Exibindo logs...")
+
+	file, err := ioutil.ReadFile("log.txt")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(file))
 }
 
 func entrySite() {
@@ -64,10 +92,12 @@ func entrySite() {
 
 	if response.StatusCode == 200 {
 		fmt.Println(site, "está de pé!")
+		registerLog(site, response.StatusCode)
 	}
 
 	if response.StatusCode != 200 {
 		fmt.Println(site, "está com problemas para carregar, Status:", response.StatusCode)
+		registerLog(site, response.StatusCode)
 	}
 }
 
@@ -76,9 +106,11 @@ func isUp(site string) {
 
 	if response.StatusCode == 200 {
 		fmt.Println(site, "está de pé!")
+		registerLog(site, response.StatusCode)
 	}
 
 	if response.StatusCode != 200 {
 		fmt.Println(site, "não com problema, Status:", response.StatusCode)
+		registerLog(site, response.StatusCode)
 	}
 }
